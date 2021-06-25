@@ -1,0 +1,32 @@
+{
+  "name": "qotdbot",
+  "version": "1.0.0",
+  "description": "A quick bot for storing and posting questions of the day on a discord server, once every 24 hours",
+  "main": "QOTD.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rook37/QOTDbot.git"
+  },
+  "keywords": [
+    "discord",
+    "qotd",
+    "question",
+    "of",
+    "the",
+    "day"
+  ],
+  "author": "Sanjay Budhia",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rook37/QOTDbot/issues"
+  },
+  "homepage": "https://github.com/rook37/QOTDbot#readme",
+  "dependencies": {
+    "discord.js": "^12.5.3",
+    "dotenv": "^10.0.0"
+  }
+}
