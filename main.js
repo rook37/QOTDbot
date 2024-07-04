@@ -1,0 +1,110 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
+const { token} = require ('./config.json');
+
+const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+client.commands = new Collection();
+
+const foldersPath = path.join(__dirname,'commands');
+const commandFolders = fs.readdirSync(foldersPath);
+
+
+/* okay stopping for the night
+
+question for tmrw:
+- do i want to do modal on /startq or a qconfig or something command that gives 
+  several buttons, like stop , start , list qs, etc?
+
+- how to do modal in one place
+
+*/ 
+
+
+
+for (const folder of commandFolders) {
+	const commandsPath = path.join(foldersPath, folder);
+	const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+	for (const file of commandFiles) {
+		const filePath = path.join(commandsPath, file);
+		const command = require(filePath);
+		// Set a new item in the Collection with the key as the command name and the value as the exported module
+		if ('data' in command && 'execute' in command) {
+			client.commands.set(command.data.name, command);
+		} else {
+			console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+		}
+	}
+}
+//https://discordjs.guide/creating-your-bot/event-handling.html#reading-event-files
+
+client.on('ready', () => {
+  console.log(`Logged in as ${client.user.tag}!`);
+  client.guilds.cache.each(createQs) //runs on ready in case servers were added while offline
+});
+
+
+
+client.on(Events.GuildCreate, async guild => {
+    //Creating a new JSON for storage when added to any new server
+    createQs(guild);
+
+	// popup modal like 'hey, gimme ur admin channel and ur general channel?'
+	// later nice to have: 'do you want to ping a role, do you want to add a prefix (default is QOTD:)
+	// 'use /config to prompt this again later' 
+});
+
+client.on(Events.InteractionCreate, async interaction => {
+	if (!interaction.isChatInputCommand()) return;
+
+
+	const command = interaction.client.commands.get(interaction.commandName);
+
+	if (!command) {
+		console.error(`No command matching ${interaction.commandName} was found.`);
+		return;
+	}
+
+	try {
+		await command.execute(interaction,parseQ,fs);
+	} catch (error) {
+		console.error(error);
+		if (interaction.replied || interaction.deferred) {
+			await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
+		} else {
+			await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+		}
+	}
+});
+
+client.login(token);
+
+/*
+
+HELPER FUNCTIONS 
+
+*/
+
+
+//Check guilds and create a file to store questions 
+function createQs(value, key, map){
+    let jsonName = value.id + '.json';
+    console.log('called it')
+    var file
+    if (!fs.existsSync(jsonName)) {
+        console.log("File: " + jsonName + " not found. Creating!")
+        file = fs.writeFileSync(jsonName, JSON.stringify({}))
+    }
+}
+
+//reads the JSON for the current loaded questions and returns it as a list
+function parseQ(id){
+    let jsonName = id + '.json';
+    var file
+    if (!fs.existsSync(jsonName)) {
+        console.log("File: " + jsonName + " not found. Creating!")
+        file = fs.writeFileSync(jsonName, JSON.stringify({}))
+    }
+    file = fs.readFileSync(jsonName)
+    return JSON.parse(file)
+} 
