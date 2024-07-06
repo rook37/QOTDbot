@@ -10,15 +10,6 @@ const foldersPath = path.join(__dirname,'commands');
 const commandFolders = fs.readdirSync(foldersPath);
 
 
-/* okay stopping for the night
-
-question for tmrw:
-- do i want to do modal on /startq or a qconfig or something command that gives 
-  several buttons, like stop , start , list qs, etc?
-
-- how to do modal in one place
-
-*/ 
 
 
 
@@ -49,9 +40,6 @@ client.on(Events.GuildCreate, async guild => {
     //Creating a new JSON for storage when added to any new server
     createQs(guild);
 
-	// popup modal like 'hey, gimme ur admin channel and ur general channel?'
-	// later nice to have: 'do you want to ping a role, do you want to add a prefix (default is QOTD:)
-	// 'use /config to prompt this again later' 
 });
 
 client.on(Events.InteractionCreate, async interaction => {

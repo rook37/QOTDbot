@@ -12,6 +12,7 @@ const commandFolders = fs.readdirSync(foldersPath);
 /*
 - so this should just have postIt and stopq. 
 - stopq is then its only actual interaction, yeah?
+- should startQ be here? that means i can't update it without resetting this one though 
 
 */
 
@@ -21,7 +22,6 @@ for (const folder of commandFolders) {
 	for (const file of commandFiles) {
 		const filePath = path.join(commandsPath, file);
 		const command = require(filePath);
-		// Set a new item in the Collection with the key as the command name and the value as the exported module
 		if ('data' in command && 'execute' in command) {
 			client.commands.set(command.data.name, command);
 		} else {
@@ -29,13 +29,11 @@ for (const folder of commandFolders) {
 		}
 	}
 }
-//https://discordjs.guide/creating-your-bot/event-handling.html#reading-event-files
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
   client.guilds.cache.each(createJSON) //runs on ready in case servers were added while offline
 });
-
 
 
 client.on(Events.InteractionCreate, async interaction => {
