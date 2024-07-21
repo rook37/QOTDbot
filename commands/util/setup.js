@@ -20,13 +20,12 @@ module.exports = {
       defAdm = serverConfig.admChannel
       defTarg = serverConfig.targChannel
       if (serverConfig.rolePing) { defRole = serverConfig.rolePing }
-
     }
 
     const admSelect = new ChannelSelectMenuBuilder()
       .setCustomId('admChannel')
       .setChannelTypes(0)
-    const targSelect = new ChannelSelectMenuBuilder().setCustomId('targChannel')//.setPlaceholder(defTarg)
+    const targSelect = new ChannelSelectMenuBuilder().setCustomId('targChannel')
     var roleSelect = new RoleSelectMenuBuilder().setCustomId('roleSelect').setMinValues(0)
 
     if (defAdm != '') { admSelect.addDefaultChannels(defAdm) }
@@ -77,19 +76,18 @@ module.exports = {
           admResponse = collector.collected.find(obj => obj.customId === 'admChannel')
           targResponse = collector.collected.find(obj => obj.customId === 'targChannel')
           roleResponse = collector.collected.find(obj => obj.customId === 'roleSelect')
-
+   
 
           admResponse = (admResponse) ? admResponse.channels.firstKey() : defAdm
           targResponse = (targResponse) ? targResponse.channels.firstKey() : defTarg
-          roleResponse = (roleResponse) ? roleResponse.channels.firstKey() : defRole
-
+          roleResponse = (roleResponse) ? roleResponse.roles.firstKey() : defRole
           let roleBool = (roleResponse) ? 1 : 0;
 
-
           writeFile(fs, admResponse, targResponse, roleResponse, interactionSubmit)
+          
           let content = `Channels set! I'll load questions in <#${admResponse}> and ask them in <#${targResponse}>!`
-
           if (roleBool) { content = content + ` <@&${roleResponse}> will be pinged.` }
+          
           interaction.editReply({
             content:
               content, components: []
@@ -101,31 +99,44 @@ module.exports = {
         }
 
       } else if (interactionSubmit.customId === 'roleClear') {
+
+        defRole = ''
+        collector.collected.sweep(obj => obj.customId === 'roleSelect')
+
         roleSelect = new RoleSelectMenuBuilder().setCustomId('roleSelect').setMinValues(0)
         row3 = new ActionRowBuilder().addComponents(roleSelect)
+
         interaction.editReply({ components: [row1, row2, row3, row4] })
         interactionSubmit.deferUpdate()
+            
+      } else if (interactionSubmit.customId === 'cancelSetup'){
+          interaction.editReply({content: `Setup cancelled! No settings were modified.`,
+           components: []})
+          
       } else {
+
         interactionSubmit.deferUpdate()
       }
 
 
     })
 
-    function writeFile(fs, admResponse, targResponse, roleResponse, interaction) {
-      const jsonName = interaction.guildId + 'cfg.json'
-      if (fs.existsSync(jsonName)) {
-      }
-      const serverConfig = {
-        server: interaction.guildId,
-        admChannel: admResponse,
-        targChannel: targResponse,
-        rolePing: roleResponse
-      }
-      fs.writeFileSync(
-        String(interaction.guildId + 'cfg.json'),
-        JSON.stringify(serverConfig)
-      )
-    }
+    
   }
+}
+
+function writeFile(fs, admResponse, targResponse, roleResponse, interaction) {
+  const jsonName = interaction.guildId + 'cfg.json'
+  if (fs.existsSync(jsonName)) {
+  }
+  const serverConfig = {
+    server: interaction.guildId,
+    admChannel: admResponse,
+    targChannel: targResponse,
+    rolePing: roleResponse
+  }
+  fs.writeFileSync(
+    String(interaction.guildId + 'cfg.json'),
+    JSON.stringify(serverConfig)
+  )
 }

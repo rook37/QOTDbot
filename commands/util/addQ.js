@@ -12,13 +12,12 @@ module.exports = {
         const q = interaction.options.getString('question')
         const pos = interaction.options.getInteger('position') ?? 'No position provided';
 
-        //TODO: once editq is in, have a shared function between the two to bump queue for insert.
+        //TODO: once editq is in, have a shared function between the two to bump queue for insert at pos.
 
         let qs = parseQ(interaction.guildId);
         qs[Object.keys(qs).length] = '**QOTD:** '+q;
         fs.writeFileSync(String(interaction.guildId+'.json'), JSON.stringify(qs))       
-		// interaction.user is the object representing the User who ran the command
-		// interaction.member is the GuildMember object, which represents the user in the specific guild
+
 		await interaction.reply(`Added "${q}" to the queue! Total questions loaded: ${Object.keys(qs).length}`);
 	},
 };

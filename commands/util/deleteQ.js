@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 
+//not functional yet
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('deleteq')
@@ -15,7 +16,7 @@ module.exports = {
         qs[Object.keys(qs).length] = q;
         fs.writeFileSync(String(interaction.guildId+'.json'), JSON.stringify(qs))       
 
-		await interaction.reply(`${q} , ${Object.keys(qs).length} This command was run by ${interaction.user.username}, who joined on ${interaction.member.joinedAt}.`);
-	},
+		await interaction.reply(`Deleted "${q}" to the queue! Total questions loaded: ${Object.keys(qs).length}`);
+},
 };
 
