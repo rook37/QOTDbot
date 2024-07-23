@@ -2,6 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 const { token} = require ('./config.json');
+const {createQs , parseQ } = require ('./helper')
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 client.commands = new Collection();
@@ -65,34 +66,4 @@ client.on(Events.InteractionCreate, async interaction => {
 
 client.login(token);
 
-/*
-
-HELPER FUNCTIONS 
-
-*/
-
-
-
-//Check guilds and create a file to store questions 
-function createQs(value, key, map){
-    let jsonName = value.id + '.json';
-    console.log('called it')
-    var file
-    if (!fs.existsSync(jsonName)) {
-        console.log("File: " + jsonName + " not found. Creating!")
-        file = fs.writeFileSync(jsonName, JSON.stringify({}))
-    }
-}
-
-//reads the JSON for the current loaded questions and returns it as a list
-function parseQ(id){
-    let jsonName = id + '.json';
-    var file
-    if (!fs.existsSync(jsonName)) {
-        console.log("File: " + jsonName + " not found. Creating!")
-        file = fs.writeFileSync(jsonName, JSON.stringify({}))
-    }
-    file = fs.readFileSync(jsonName)
-    return JSON.parse(file)
-} 
 

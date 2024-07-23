@@ -4,6 +4,8 @@ const { DateTime } = require('luxon');
 
 const { postIt } = require('../../poster')
 
+let test = 1;
+
 const zones = {'gmt':'Etc/GMT',
                 'utc':'Etc/GMT',
                 'pt':'America/Los_Angeles',
@@ -41,7 +43,7 @@ const zones = {'gmt':'Etc/GMT',
 
 module.exports = {
 	data: new SlashCommandBuilder()
-		.setName('startq')
+		.setName('qstart')
 		.setDescription('Start the daily question timer'),
         
 	
@@ -67,7 +69,7 @@ module.exports = {
 			.setCustomId('tzInput')
 			.setLabel("What is your timezone?")
 			.setStyle(TextInputStyle.Short)
-            .setValue('UTC-6');
+            .setValue('UTC-5');
         const row1 = new ActionRowBuilder().addComponents(timeInput);
         const row2 = new ActionRowBuilder().addComponents(tzInput);
         modal.addComponents(row1,row2);
@@ -82,17 +84,20 @@ module.exports = {
                 tzRes = interaction.fields.getTextInputValue('tzInput');
          
                 var postTime = findDifference(timeRes,tzRes);
-                if(!postTime){
+                console.log(postTime)
+                if(!postTime.isValid){
                     interaction.reply(
-                        `ERROR: Sorry, I can't understand that entry. If you're getting errors, try using a UTC formatted time!`)
+                        `ERROR: Sorry, I can't understand that entry. \nIf you're getting errors, try ensuring time is in a HHMM or HH:MM format (h = hours, m = minutes) and using a UTC formatted time!`)
                 }
-                             
-                console.log(postTime.diffNow(['hours']))
+                else {
+                writeTime(fs,interaction.guildId+'cfg.json',postTime);
                 interaction.reply(
                     `Thank you! I'll ask the first question in ${postTime.diffNow().toFormat(`hh'h'mm'm'`)}`);
                 
+                if(test){postIt(interaction.guildId,client)}else{
                 setTimeout ( () => {postIt(interaction.guildId,client)},postTime.diffNow().get('milliseconds'));
-            })  
+                }
+            }})  
 
             .catch(console.error);
         console.log(timeRes+' and tz is stilll '+tzRes)
@@ -113,7 +118,7 @@ function findDifference(timeRes,tzRes){
     else if(!utcpattern.test(tzRes)){ 
         tzRes = zones[tzRes.toLowerCase()]}    
 
-    timeRes = Number(String(timeRes).replaceAll(':',''));
+    timeRes = Number(String(timeRes).replaceAll(':','').replaceAll(' ',''));
     tHour = Math.floor(timeRes / 100)
     tMin = timeRes % 100; 
 
@@ -133,4 +138,20 @@ function noConfig(fs,interaction){
 		return (serverConfig.admChannel && serverConfig.targChannel)
     }
     else{return false}
+}
+
+
+function writeTime(fs,jsonName, postTime){
+    try{
+        file = fs.readFileSync(jsonName);
+        serverConfig = JSON.parse(file)
+        serverConfig.postTime = postTime;
+        serverConfig.posting = 1
+        fs.writeFileSync(
+            String(jsonName),
+            JSON.stringify(serverConfig))
+        
+    } catch (er){
+        console.log(er)
+    }
 }

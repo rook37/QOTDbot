@@ -2,7 +2,7 @@ const { SlashCommandBuilder, ButtonBuilder, ButtonStyle, RoleSelectMenuBuilder, 
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('setup')
+    .setName('qsetup')
     .setDescription('Configuration options'),
 
   async execute(interaction, parseQ, fs) {
@@ -13,6 +13,7 @@ module.exports = {
     let defRole = '';
     let file;
     let jsonName = interaction.guildId + 'cfg.json';
+    
     if (fs.existsSync(jsonName)) {
       file = fs.readFileSync(jsonName);
       serverConfig = JSON.parse(file)
@@ -54,7 +55,7 @@ module.exports = {
 
     await interaction.reply({
       content:
-        '**\nSet your channels!** \n- The first option will be set as the admin channel, where you can load questions. \n- The second option will set the channel where the questions will be posted!\n- The third option sets a role to be tagged when questions are asked. **Leave it blank for no role tag.**',
+        '**\nSet your channels!** \n- The first option will be set as the admin channel, for updates and error messages \n- The second option will set the channel where the questions will be posted!\n- The third option sets a role to be tagged when questions are asked. **Leave it blank for no role tag.**',
       components: [row1, row2, row3, row4]
     })
 
@@ -76,7 +77,7 @@ module.exports = {
           admResponse = collector.collected.find(obj => obj.customId === 'admChannel')
           targResponse = collector.collected.find(obj => obj.customId === 'targChannel')
           roleResponse = collector.collected.find(obj => obj.customId === 'roleSelect')
-   
+
 
           admResponse = (admResponse) ? admResponse.channels.firstKey() : defAdm
           targResponse = (targResponse) ? targResponse.channels.firstKey() : defTarg
@@ -84,10 +85,10 @@ module.exports = {
           let roleBool = (roleResponse) ? 1 : 0;
 
           writeFile(fs, admResponse, targResponse, roleResponse, interactionSubmit)
-          
-          let content = `Channels set! I'll load questions in <#${admResponse}> and ask them in <#${targResponse}>!`
+
+          let content = `Channels set! I'll ask questions in <#${targResponse}> and post errors and updates in <#${admResponse}>. Please make sure I have permission to post in both!`
           if (roleBool) { content = content + ` <@&${roleResponse}> will be pinged.` }
-          
+
           interaction.editReply({
             content:
               content, components: []
@@ -108,20 +109,16 @@ module.exports = {
 
         interaction.editReply({ components: [row1, row2, row3, row4] })
         interactionSubmit.deferUpdate()
-            
-      } else if (interactionSubmit.customId === 'cancelSetup'){
-          interaction.editReply({content: `Setup cancelled! No settings were modified.`,
-           components: []})
-          
-      } else {
 
+      } else if (interactionSubmit.customId === 'cancelSetup') {
+        interaction.editReply({
+          content: `Setup cancelled! No settings were modified.`,
+          components: []
+        })
+      } else {
         interactionSubmit.deferUpdate()
       }
-
-
     })
-
-    
   }
 }
 
